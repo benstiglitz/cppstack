@@ -13,6 +13,8 @@ Value *stack_bottom, *stack_top;
 std::stack<Frame> return_stack;
 std::vector<void (*)(void)> prims;
 
+#define PRIM(c, f, n) { int _prim_tag = prims.size(); prims.push_back(f); c.register_primitive(n, _prim_tag); }
+
 void die(char *msg) {
     printf("die: %s\n", msg);
     exit(1);
@@ -148,26 +150,27 @@ void op_divmod() {
 int main(int argc, char **argv) {
     stack_bottom = stack_top = (Value *)calloc(sizeof(Value), STACK_SIZE);
 
-    prims.push_back(op_if);
-    prims.push_back(op_print);
-    prims.push_back(op_add);
-    prims.push_back(op_sub);
-    prims.push_back(op_call);
-    prims.push_back(op_while);
-    prims.push_back(op_greater);
-    prims.push_back(op_store);
-    prims.push_back(op_load);
-    prims.push_back(op_pick);
-    prims.push_back(op_swap);
-    prims.push_back(op_rot);
-    prims.push_back(op_not);
-    prims.push_back(op_drop);
-    prims.push_back(op_stack_top);
-    prims.push_back(op_stack_bottom);
-    prims.push_back(op_mul);
-    prims.push_back(op_divmod);
-
     Compiler c;
+
+    PRIM(c, op_if,	"if");
+    PRIM(c, op_print,	"print");
+    PRIM(c, op_add,	"+");
+    PRIM(c, op_sub,	"-");
+    PRIM(c, op_call,	"call");
+    PRIM(c, op_while,	"while");
+    PRIM(c, op_greater, ">");
+    PRIM(c, op_store,	"!");
+    PRIM(c, op_load,	"@");
+    PRIM(c, op_pick,	"pick");
+    PRIM(c, op_swap,	"swap");
+    PRIM(c, op_rot,	"rot");
+    PRIM(c, op_not,     "not");
+    PRIM(c, op_drop,	"drop");
+    PRIM(c, op_stack_top, "sp");
+    PRIM(c, op_stack_bottom, "sbase");
+    PRIM(c, op_mul,	"*");
+    PRIM(c, op_divmod,	"divmod");
+
     std::string input;
     
     // Read from file

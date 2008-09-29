@@ -15,4 +15,5 @@ class Compiler
     public:
     Compiler();
     Clause *compile(std::string s);
+    void register_primitive(std::string name, Value tag);
 };

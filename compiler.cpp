@@ -4,24 +4,11 @@
 
 Compiler::Compiler() : state(state_normal)
 {
-    ops["if"]	    = (0 << 2) | 3;
-    ops["print"]    = (1 << 2) | 3;
-    ops["+"]	    = (2 << 2) | 3;
-    ops["-"]	    = (3 << 2) | 3;
-    ops["call"]	    = (4 << 2) | 3;
-    ops["while"]    = (5 << 2) | 3;
-    ops[">"]	    = (6 << 2) | 3;
-    ops["!"]	    = (7 << 2) | 3;
-    ops["@"]	    = (8 << 2) | 3;
-    ops["pick"]     = (9 << 2) | 3;
-    ops["swap"]	    = (10 << 2) | 3;
-    ops["rot"]	    = (11 << 2) | 3;
-    ops["not"]      = (12 << 2) | 3;
-    ops["drop"]	    = (13 << 2) | 3;
-    ops["sp"]	    = (14 << 2) | 3;
-    ops["sbase"]    = (15 << 2) | 3;
-    ops["*"]	    = (16 << 2) | 3;
-    ops["divmod"]   = (17 << 2) | 3;
+}
+
+void Compiler::register_primitive(std::string name, Value tag)
+{
+    ops[name] = (tag << 2) | 3;
 }
 
 Clause *Compiler::compile(std::string s) {
