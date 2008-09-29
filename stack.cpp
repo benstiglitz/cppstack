@@ -10,6 +10,7 @@
 const int STACK_SIZE = 1024;
 //std::deque<Value> master_stack;
 Value *stack_bottom, *stack_top;
+Value stack_always_print = 0;
 std::stack<Frame> return_stack;
 std::vector<void (*)(void)> prims;
 
@@ -59,7 +60,7 @@ void op_if() {
 }
 
 void op_print() {
-    std::cout << pop() << std::endl;
+    std::cout << " " << pop();
 }
 
 void op_add() {
@@ -147,6 +148,10 @@ void op_divmod() {
   push(a % b);
 }
 
+void var_print() {
+  push((Value)&stack_always_print);
+}
+
 int main(int argc, char **argv) {
     stack_bottom = stack_top = (Value *)calloc(sizeof(Value), STACK_SIZE);
 
@@ -170,6 +175,7 @@ int main(int argc, char **argv) {
     PRIM(c, op_stack_bottom, "sbase");
     PRIM(c, op_mul,	"*");
     PRIM(c, op_divmod,	"divmod");
+    PRIM(c, var_print,  "s:always-print");
 
     std::string input;
     
@@ -184,7 +190,13 @@ int main(int argc, char **argv) {
     std::cout << "> "; std::getline(std::cin, input);
     while (!input.empty()) {
 	call(c.compile(input));
-	std::cout << "> "; std::getline(std::cin, input);
+	if (stack_always_print) {
+	    Value *v;
+	    for (v = stack_bottom; v != stack_top; v++) {
+		std::cout << " " << *v;
+	    }
+	}
+	std::cout << " ok" << std::endl <<  "> "; std::getline(std::cin, input);
     }
     return 0;
 }
