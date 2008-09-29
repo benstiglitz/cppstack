@@ -57,9 +57,7 @@ Value Compiler::compile_token(std::string token) {
 	    state = state_def;
 	    return 0;
 	} else if (token == ";") {
-	    Value v = (Value)clauses.top();
 	    clauses.pop();
-	    ops[active_def] = v;
 	    return 0;
 	} else if (token == "(") {
 	    state = state_comment;
@@ -75,6 +73,7 @@ Value Compiler::compile_token(std::string token) {
 	}
     case state_def:
 	active_def = token;
+	ops[active_def] = (Value)clauses.top();
 	state = state_normal;
 	return 0;
     case state_comment:
