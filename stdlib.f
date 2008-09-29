@@ -11,6 +11,10 @@
 : print-stack sbase sp { @ print } upto ;
 : / divmod drop ;
 : % divmod swap drop ;
-: s:depth sp sbase - 4 / ;
-: s:each sbase sp 8 - rot { rot rot over over < } { rot dup 3 pick swap call rot 4 + rot rot } while drop drop drop ;
+: wordsize 4 ;
+: s:depth sp sbase - wordsize / ;
+: s:each sbase sp 8 - rot { rot rot over over < } { rot dup 3 pick swap call rot wordsize + rot rot } while drop drop drop ;
 : s:print { @ print } s:each ;
+( : pick 2 + wordsize * sp swap - @ ; )
+: eq over over < { drop drop 0 } { > { 0 } { 1 } if } if ;
+: <> eq not ;
