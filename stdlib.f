@@ -11,4 +11,6 @@
 : print-stack sbase sp { @ print } upto ;
 : / divmod drop ;
 : % divmod swap drop ;
-: stack-depth sp sbase - 4 / ;
+: s:depth sp sbase - 4 / ;
+: s:each sbase sp 8 - rot { rot rot over over < } { rot dup 3 pick swap call rot 4 + rot rot } while drop drop drop ;
+: s:print { @ print } s:each ;
