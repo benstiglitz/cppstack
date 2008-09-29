@@ -14,12 +14,14 @@ Compiler::Compiler() : state(state_normal)
     ops["!"]	    = (7 << 2) | 3;
     ops["@"]	    = (8 << 2) | 3;
     ops["pick"]     = (9 << 2) | 3;
-	ops["swap"]		= (10 << 2) | 3;
-	ops["rot"]		= (11 << 2) | 3;
-	ops["not"]      = (12 << 2) | 3;
-	ops["drop"]		= (13 << 2) | 3;
-	ops["sp"]		= (14 << 2) | 3;
-	ops["sbase"]    = (15 << 2) | 3;
+    ops["swap"]	    = (10 << 2) | 3;
+    ops["rot"]	    = (11 << 2) | 3;
+    ops["not"]      = (12 << 2) | 3;
+    ops["drop"]	    = (13 << 2) | 3;
+    ops["sp"]	    = (14 << 2) | 3;
+    ops["sbase"]    = (15 << 2) | 3;
+    ops["*"]	    = (16 << 2) | 3;
+    ops["divmod"]   = (17 << 2) | 3;
 }
 
 Clause *Compiler::compile(std::string s) {

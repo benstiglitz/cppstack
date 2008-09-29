@@ -19,18 +19,14 @@ void die(char *msg) {
 }
 
 void push(Value v) {
-    //master_stack.push_back(v);
     *stack_top++ = v;
 }
 
 Value pop() {
-    //if (master_stack.empty()) {
     if (stack_top == stack_bottom) {
 	die("Stack underflow");
     }
-    //Value v = *--master_stack.end();
-    //master_stack.pop_back();
-    Value v = *stack_bottom--;
+    Value v = *--stack_top;
     return v;
 }
 
@@ -139,6 +135,16 @@ void op_stack_top() {
     push((Value)stack_top);
 }
 
+void op_mul() {
+  push(pop() * pop());
+}
+
+void op_divmod() {
+  Value b = pop(), a = pop();
+  push(a / b);
+  push(a % b);
+}
+
 int main(int argc, char **argv) {
     stack_bottom = stack_top = (Value *)calloc(sizeof(Value), STACK_SIZE);
 
@@ -158,6 +164,8 @@ int main(int argc, char **argv) {
     prims.push_back(op_drop);
     prims.push_back(op_stack_top);
     prims.push_back(op_stack_bottom);
+    prims.push_back(op_mul);
+    prims.push_back(op_divmod);
 
     Compiler c;
     std::string input;
