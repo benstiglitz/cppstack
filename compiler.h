@@ -10,7 +10,7 @@ class Compiler
     std::map<std::string, Value> ops;
     std::string active_def;
     enum { state_normal, state_def , state_comment, state_variable } state;
-    Value compile_token(std::string token);
+    Value compile_token(std::string token, SourceLocation location);
 
     public:
     Compiler();

@@ -15,6 +15,7 @@ std::stack<Frame> return_stack;
 std::vector<void (*)(void)> prims;
 
 #define PRIM(c, f, n) { int _prim_tag = prims.size(); prims.push_back(f); c.register_primitive(n, _prim_tag); }
+void HighlightSourceLocation(SourceLocation loc);
 
 void die(char *msg) {
     printf("die: %s\n", msg);
@@ -189,14 +190,28 @@ int main(int argc, char **argv) {
     // Read from standard input
     std::cout << "> "; std::getline(std::cin, input);
     while (!input.empty()) {
-	call(c.compile(input));
-	if (stack_always_print) {
-	    Value *v;
-	    for (v = stack_bottom; v != stack_top; v++) {
-		std::cout << " " << *v;
-	    }
-	}
-	std::cout << " ok" << std::endl <<  "> "; std::getline(std::cin, input);
+	try {
+            call(c.compile(input));
+            if (stack_always_print) {
+                Value *v;
+                for (v = stack_bottom; v != stack_top; v++) {
+                    std::cout << " " << *v;
+                }
+            }
+            std::cout << "  ok" << std::endl;
+        } catch (UnknownTokenError e) {
+            HighlightSourceLocation(e.second);
+            std::cout << "Unknown token " << e.first << std::endl;
+        } catch (NestedDefinitionError e) {
+            HighlightSourceLocation(e.second);
+            std::cout << "Nested definiton" << std::endl;
+        }
+	std::cout <<  "> "; std::getline(std::cin, input);
     }
     return 0;
+}
+
+void HighlightSourceLocation(SourceLocation loc) {
+    std::cout << std::string(2 + loc.first, ' ')
+              << std::string(loc.second, '^') << std::endl;
 }

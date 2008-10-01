@@ -18,7 +18,8 @@ Clause *Compiler::compile(std::string s) {
 	int pos = s.find(" ", offset);
 	if (pos == std::string::npos) { break; }
 	std::string token = s.substr(offset, pos - offset);
-	Value v = compile_token(token);
+        SourceLocation location(offset, pos - offset);
+	Value v = compile_token(token, location);
 	if (v != 0) {
 	    clauses.top()->push_back(v);
 	}
@@ -27,7 +28,8 @@ Clause *Compiler::compile(std::string s) {
 
     if (offset < s.size()) {
 	std::string token = s.substr(offset, s.size() - offset);
-	Value v = compile_token(token);
+        SourceLocation location(offset, s.size() - offset);
+	Value v = compile_token(token, location);
 	if (v != 0) {
 	    clauses.top()->push_back(v);
 	}
@@ -37,7 +39,7 @@ Clause *Compiler::compile(std::string s) {
     return c;
 }
 
-Value Compiler::compile_token(std::string token) {
+Value Compiler::compile_token(std::string token, SourceLocation location) {
     const char *token_str = token.c_str();
     char *token_end;
     long number = strtol(token_str, &token_end, 10);
@@ -53,7 +55,11 @@ Value Compiler::compile_token(std::string token) {
 	    clauses.pop();
 	    return (Value)c | 2;
 	} else if (token == ":") {
-	    clauses.push(new Clause);
+	    if (clauses.size() > 1) {
+                clauses.empty();
+                throw NestedDefinitionError(token, location);
+            }
+            clauses.push(new Clause);
 	    state = state_def;
 	    return 0;
 	} else if (token == ";") {
@@ -68,8 +74,9 @@ Value Compiler::compile_token(std::string token) {
 	} else if (ops.find(token) != ops.end()) {
 	    return ops[token];
 	} else {
-	    std::cout << "unknown token " << token << std::endl;
-	    return 1;
+            clauses.empty();
+            throw UnknownTokenError(token, location);
+	    return 0;
 	}
     case state_def:
 	active_def = token;
