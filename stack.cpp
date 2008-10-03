@@ -102,6 +102,13 @@ void op_load() {
     push(*addr);
 }
 
+void op_load_char() {
+    char *addr = (char *)pop();
+    Value offset = (Value)addr % sizeof(Value);
+    addr = (char *)((Value)addr & ~0x3);
+    push((Value)addr[offset]);
+}
+
 void op_drop() {
     (void)pop();
 }
@@ -154,7 +161,7 @@ void var_print() {
 }
 
 void op_print_string() {
-    std::cout << *(std::string *)pop();
+    std::cout << (char *)pop();
 }
 
 int main(int argc, char **argv) {
@@ -172,6 +179,7 @@ int main(int argc, char **argv) {
     PRIM(c, op_greater, ">");
     PRIM(c, op_store,	"!");
     PRIM(c, op_load,	"@");
+    PRIM(c, op_load_char, "@c");
     PRIM(c, op_pick,	"pick");
     PRIM(c, op_swap,	"swap");
     PRIM(c, op_rot,	"rot");

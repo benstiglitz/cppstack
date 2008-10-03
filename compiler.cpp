@@ -88,7 +88,10 @@ Value Compiler::compile_token(std::string token, SourceLocation location) {
 	if (token_end[0] == '\0') {
 	    return (number << 2) | 1;
 	} else if (token[0] == '"') {
-	    return (Value)(new std::string(token.substr(1, token.size() - 2))) | 2;
+	    char *s = (char *)malloc(token.size() - 2 + 1);
+	    token.copy(s, token.size() - 2, 1);
+	    s[token.size() - 2] = 0;
+	    return (Value)(s) | 2;
 	} else if (token == "{") {
 	    clauses.push(new Clause);
 	    return 0;

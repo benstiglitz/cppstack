@@ -8,7 +8,6 @@
 : upto { rot rot over over <= } { rot dup 3 pick swap call rot 1+ rot rot } while drop drop drop ;
 : do dup call while ;
 : . print ;
-: .s print-string ;
 : print-stack sbase sp { @ print } upto ;
 : / divmod drop ;
 : % divmod swap drop ;
@@ -23,3 +22,7 @@
 : s:each sbase sp 8 - rot { rot rot over over < } { rot dup 3 pick swap call rot wordsize + rot rot } while drop drop drop ;
 : s:print { @ print } s:each ;
 : s:pick 2 + wordsize * sp swap - @ ;
+
+( string operations )
+: .s print-string ;
+: string-length 0 { over @c 0 <> } { 1+ swap 1+ swap } while swap drop ;
