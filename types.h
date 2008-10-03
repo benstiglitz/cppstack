@@ -14,5 +14,5 @@ typedef std::pair<int, int> SourceLocation;
 
 SOURCE_ERROR(UnknownTokenError);
 SOURCE_ERROR(NestedDefinitionError);
-typedef std::pair<std::string, SourceLocation> NestedDefintionError;
+SOURCE_ERROR(UnterminatedStringError);
 #endif

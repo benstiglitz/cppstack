@@ -2,6 +2,58 @@
 #include <iostream>
 #include <stdlib.h>
 
+std::vector< std::pair<std::string, SourceLocation> > Lexer::lex(std::string s) {
+    unsigned offset = 0, len = s.size();
+    std::vector < std::pair<std::string, SourceLocation> > tokens;
+
+    while (offset < len) {
+	char next = s[offset];
+	switch (state) {
+	case state_whitespace:
+	    if (next == ' ') {
+		offset++;
+	    } else if (next == '"') {
+		state = state_string;
+	    } else {
+		state = state_normal;
+	    }
+	    break;
+	case state_normal:
+	{
+	    int token_len = 0;
+	    while (next != ' ' && (offset + token_len < len)) {
+		token_len++;
+		next = s[offset + token_len];
+	    }
+	    tokens.push_back(std::make_pair(s.substr(offset, token_len), std::make_pair(offset, token_len)));
+	    offset += token_len;
+	    state = state_whitespace;
+	}
+	    break;
+	case state_string:
+	{
+	    int token_len = 1;
+	    next = s[offset + 1];
+	    while (next != '"' && (offset + token_len < len)) {
+		token_len++;
+		next = s[offset + token_len];
+	    }
+	    token_len++;
+	    if (offset + token_len > len) {
+		throw UnterminatedStringError("\"", std::make_pair(offset, token_len - 1));
+	    }
+
+	    tokens.push_back(std::make_pair(s.substr(offset, token_len), std::make_pair(offset, token_len)));
+	    offset += token_len;
+	    state = state_whitespace;
+	}
+	    break;
+	}
+    }
+
+    return tokens;
+}
+
 Compiler::Compiler() : state(state_normal)
 {
 }
@@ -11,29 +63,17 @@ void Compiler::register_primitive(std::string name, Value tag)
     ops[name] = (tag << 2) | 3;
 }
 
-Clause *Compiler::compile(std::string s) {
-    int offset = 0;
+Clause *Compiler::compile(std::vector < std::pair<std::string, SourceLocation> > tokens) {
+    std::vector<std::pair<std::string, SourceLocation> >::iterator it;
+    Value v;
+
     clauses.push(new Clause);
-    while(offset < s.size()) {
-	int pos = s.find(" ", offset);
-	if (pos == std::string::npos) { break; }
-	std::string token = s.substr(offset, pos - offset);
-        SourceLocation location(offset, pos - offset);
-	Value v = compile_token(token, location);
-	if (v != 0) {
+    for(it = tokens.begin(); it != tokens.end(); ++it) {
+	if ((v = compile_token((*it).first, (*it).second)) != 0) {
 	    clauses.top()->push_back(v);
 	}
-	offset = pos + 1;
     }
 
-    if (offset < s.size()) {
-	std::string token = s.substr(offset, s.size() - offset);
-        SourceLocation location(offset, s.size() - offset);
-	Value v = compile_token(token, location);
-	if (v != 0) {
-	    clauses.top()->push_back(v);
-	}
-    }
     Clause *c = clauses.top();
     clauses.pop();
     return c;
@@ -47,6 +87,8 @@ Value Compiler::compile_token(std::string token, SourceLocation location) {
     case state_normal:
 	if (token_end[0] == '\0') {
 	    return (number << 2) | 1;
+	} else if (token[0] == '"') {
+	    return (Value)(new std::string(token.substr(1, token.size() - 2))) | 2;
 	} else if (token == "{") {
 	    clauses.push(new Clause);
 	    return 0;

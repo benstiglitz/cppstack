@@ -153,9 +153,14 @@ void var_print() {
   push((Value)&stack_always_print);
 }
 
+void op_print_string() {
+    std::cout << *(std::string *)pop();
+}
+
 int main(int argc, char **argv) {
     stack_bottom = stack_top = (Value *)calloc(sizeof(Value), STACK_SIZE);
 
+    Lexer l;
     Compiler c;
 
     PRIM(c, op_if,	"if");
@@ -177,6 +182,7 @@ int main(int argc, char **argv) {
     PRIM(c, op_mul,	"*");
     PRIM(c, op_divmod,	"divmod");
     PRIM(c, var_print,  "s:always-print");
+    PRIM(c, op_print_string, "print-string");
 
     std::string input;
     
@@ -184,14 +190,14 @@ int main(int argc, char **argv) {
     std::ifstream f;
     f.open("stdlib.f");
     while(!std::getline(f, input).eof()) {
-	call(c.compile(input));
+	call(c.compile(l.lex(input)));
     }
 
     // Read from standard input
     std::cout << "> "; std::getline(std::cin, input);
     while (!input.empty()) {
 	try {
-            call(c.compile(input));
+            call(c.compile(l.lex(input)));
             if (stack_always_print) {
                 Value *v;
                 for (v = stack_bottom; v != stack_top; v++) {
@@ -205,7 +211,10 @@ int main(int argc, char **argv) {
         } catch (NestedDefinitionError e) {
             HighlightSourceLocation(e.second);
             std::cout << "Nested definiton" << std::endl;
-        }
+        } catch (UnterminatedStringError e) {
+	    HighlightSourceLocation(e.second);
+	    std::cout << "Unterminated string" << std::endl;
+	}
 	std::cout <<  "> "; std::getline(std::cin, input);
     }
     return 0;

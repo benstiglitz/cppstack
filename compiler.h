@@ -3,6 +3,16 @@
 #include <map>
 #include "types.h"
 
+class Lexer
+{
+    private:
+    enum { state_whitespace, state_normal, state_string } state;
+
+    public:
+    Lexer() : state(state_whitespace) {};
+    std::vector< std::pair<std::string, SourceLocation> > lex(std::string s);
+};
+
 class Compiler
 {
     private:
@@ -14,6 +24,6 @@ class Compiler
 
     public:
     Compiler();
-    Clause *compile(std::string s);
+    Clause *compile(std::vector < std::pair<std::string, SourceLocation> > tokens);
     void register_primitive(std::string name, Value tag);
 };
