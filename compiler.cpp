@@ -56,7 +56,9 @@ Value Compiler::compile_token(std::string token, SourceLocation location) {
 	    return (Value)c | 2;
 	} else if (token == ":") {
 	    if (clauses.size() > 1) {
-                clauses.empty();
+		while (!clauses.empty()) {
+		    clauses.pop();
+		}
                 throw NestedDefinitionError(token, location);
             }
             clauses.push(new Clause);
@@ -74,7 +76,9 @@ Value Compiler::compile_token(std::string token, SourceLocation location) {
 	} else if (ops.find(token) != ops.end()) {
 	    return ops[token];
 	} else {
-            clauses.empty();
+	    while (!clauses.empty()) {
+		clauses.pop();
+	    }
             throw UnknownTokenError(token, location);
 	    return 0;
 	}
