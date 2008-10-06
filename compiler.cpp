@@ -63,7 +63,7 @@ void Compiler::register_primitive(std::string name, Value tag)
     ops[name] = (tag << 2) | 3;
 }
 
-Clause *Compiler::compile(std::vector < std::pair<std::string, SourceLocation> > tokens) {
+Value *Compiler::compile(std::vector < std::pair<std::string, SourceLocation> > tokens) {
     std::vector<std::pair<std::string, SourceLocation> >::iterator it;
     Value v;
 
@@ -76,7 +76,12 @@ Clause *Compiler::compile(std::vector < std::pair<std::string, SourceLocation> >
 
     Clause *c = clauses.top();
     clauses.pop();
-    return c;
+    Value *cv = (Value *)malloc(sizeof(Value) * (c->size() + 1));
+    std::copy(c->begin(), c->end(), cv);
+    cv[c->size()] = 0;
+    delete c;
+
+    return cv;
 }
 
 Value Compiler::compile_token(std::string token, SourceLocation location) {
@@ -98,7 +103,12 @@ Value Compiler::compile_token(std::string token, SourceLocation location) {
 	} else if (token == "}") {
 	    Clause *c = clauses.top();
 	    clauses.pop();
-	    return (Value)c | 2;
+	    Value *v = (Value *)malloc(sizeof(Value) * (c->size() + 1));
+	    std::copy(c->begin(), c->end(), v);
+	    v[c->size()] = 0;
+	    delete c;
+
+	    return (Value)v | 2;
 	} else if (token == ":") {
 	    if (clauses.size() > 1) {
 		while (!clauses.empty()) {
@@ -110,7 +120,14 @@ Value Compiler::compile_token(std::string token, SourceLocation location) {
 	    state = state_def;
 	    return 0;
 	} else if (token == ";") {
+	    Clause *c = clauses.top();
 	    clauses.pop();
+	    Value *v = (Value *)malloc(sizeof(Value) * (c->size() + 1));
+	    std::copy(c->begin(), c->end(), v);
+	    v[c->size()] = 0;
+	    delete c;
+
+	    ops[active_def] = (Value)v;
 	    return 0;
 	} else if (token == "(") {
 	    state = state_comment;
@@ -129,7 +146,6 @@ Value Compiler::compile_token(std::string token, SourceLocation location) {
 	}
     case state_def:
 	active_def = token;
-	ops[active_def] = (Value)clauses.top();
 	state = state_normal;
 	return 0;
     case state_comment:
@@ -138,8 +154,9 @@ Value Compiler::compile_token(std::string token, SourceLocation location) {
 	}
 	return 0;
     case state_variable:
-	Clause *c = new Clause;
-	c->push_back((Value)malloc(sizeof(Value)) | 2);
+	Value *c = (Value *)malloc(sizeof(Value) * 2);
+	*c++ = (Value)malloc(sizeof(Value)) | 2;
+	*c++ - 0;
 	ops[token] = (Value)c | 2;
 	state = state_normal;
 	return 0;

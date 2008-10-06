@@ -24,6 +24,6 @@ class Compiler
 
     public:
     Compiler();
-    Clause *compile(std::vector < std::pair<std::string, SourceLocation> > tokens);
+    Value *compile(std::vector < std::pair<std::string, SourceLocation> > tokens);
     void register_primitive(std::string name, Value tag);
 };

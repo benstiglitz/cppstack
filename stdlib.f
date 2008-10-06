@@ -14,7 +14,7 @@
 : = over over < { drop drop 0 } { > { 0 } { 1 } if } if ;
 : <> = not ;
 : times { over 0 > } { dup call swap 1- swap } while drop drop ;
-: fib dup 0 = { 0 drop } { dup 1 = { 1 drop } { dup 1 - fib swap 2 - fib + } if } if ;
+( : fib dup 0 = { 0 drop } { dup 1 = { 1 drop } { dup 1 - fib swap 2 - fib + } if } if ; add recursion support)
 
 ( stack operations )
 : wordsize 4 ;

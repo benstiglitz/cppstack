@@ -8,11 +8,11 @@
 #include "Compiler.h"
 
 const int STACK_SIZE = 1024;
-//std::deque<Value> master_stack;
 Value *stack_bottom, *stack_top;
+Value *rstack_bottom, *rstack_top;
 Value stack_always_print = 0;
-std::stack<Frame> return_stack;
 std::vector<void (*)(void)> prims;
+Value *pc;
 
 #define PRIM(c, f, n) { int _prim_tag = prims.size(); prims.push_back(f); c.register_primitive(n, _prim_tag); }
 void HighlightSourceLocation(SourceLocation loc);
@@ -34,11 +34,11 @@ Value pop() {
     return v;
 }
 
-Value call(Clause *c) {
-    return_stack.push(std::make_pair(c, 0));
-    Frame &f = return_stack.top();
-    while(f.second < f.first->size()) {
-	Value v = (*f.first)[f.second];
+Value call(Value *c) {
+    *rstack_top++ = (Value)pc;
+    pc = c;
+    while(*pc != 0) {
+	Value v = *pc;
 	if ((v & 3) == 1) {
 	    push(v >> 2);
 	} else if ((v & 3) == 2) {
@@ -46,17 +46,18 @@ Value call(Clause *c) {
 	} else if ((v & 3) == 3) {
 	    prims[v>>2]();
 	} else {
-	    call((Clause *)v);
+	    call((Value *)v);
 	}
-	f.second++;
+	pc++;
     }
+    pc = (Value *)*--rstack_top;
 }
 
 
 void op_if() {
     Value false_clause = pop(), true_clause = pop(), v = pop();
     Value clause = (v != 0) ? true_clause : false_clause;
-    Clause *c = (Clause *)clause;
+    Value *c = (Value *)clause;
     call(c);
 }
 
@@ -74,15 +75,15 @@ void op_sub() {
 }
 
 void op_call() {
-    call((Clause *)pop());
+    call((Value *)pop());
 }
 
 void op_while() {
     Value loop = pop(), predicate = pop();
-    call((Clause *)predicate);
+    call((Value *)predicate);
     while (pop()) {
-	call((Clause *)loop);
-	call((Clause *)predicate);
+	call((Value *)loop);
+	call((Value *)predicate);
     }
 }
 
@@ -164,8 +165,28 @@ void op_print_string() {
     std::cout << (char *)pop();
 }
 
+void op_rstack_push() {
+    *rstack_top++ = pop();
+}
+
+void op_rstack_pull() {
+    if (rstack_top == rstack_bottom) {
+	die("Return stack underflow");
+    }
+    push(*--rstack_top);
+}
+
+void op_rstack_copy() {
+    if (rstack_top == rstack_bottom) {
+	die("Return stack underflow");
+    }
+    push(*(rstack_top-1));
+}
+
 int main(int argc, char **argv) {
     stack_bottom = stack_top = (Value *)calloc(sizeof(Value), STACK_SIZE);
+    rstack_bottom = rstack_top = (Value *)calloc(sizeof(Value), STACK_SIZE);
+    pc = 0;
 
     Lexer l;
     Compiler c;
@@ -191,6 +212,9 @@ int main(int argc, char **argv) {
     PRIM(c, op_divmod,	"divmod");
     PRIM(c, var_print,  "s:always-print");
     PRIM(c, op_print_string, "print-string");
+    PRIM(c, op_rstack_push, "r<");
+    PRIM(c, op_rstack_pull, "r>");
+    PRIM(c, op_rstack_copy, "r@");
 
     std::string input;
     
