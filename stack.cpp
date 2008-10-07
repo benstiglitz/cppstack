@@ -219,10 +219,12 @@ int main(int argc, char **argv) {
     std::string input;
     
     // Read from file
-    std::ifstream f;
-    f.open("stdlib.f");
-    while(!std::getline(f, input).eof()) {
-	call(c.compile(l.lex(input)));
+    if (!(argc > 1)) {
+	std::ifstream f;
+	f.open("stdlib.f");
+	while(!std::getline(f, input).eof()) {
+	    call(c.compile(l.lex(input)));
+	}
     }
 
     // Read from standard input
