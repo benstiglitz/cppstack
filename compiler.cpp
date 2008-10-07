@@ -162,3 +162,14 @@ Value Compiler::compile_token(std::string token, SourceLocation location) {
 	return 0;
     }
 }
+
+
+std::string Compiler::name_for_value(Value *v) {
+    std::pair<std::string, Value> p;
+    std::map<std::string, Value>::iterator i = ops.begin();
+    while (i != ops.end()) {
+	p = *i++;
+	if (p.second == (Value)v) return p.first;
+    }
+    return "";
+}
