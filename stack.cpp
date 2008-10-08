@@ -172,12 +172,10 @@ void op_drop() {
 void op_pick() {
     callstack.push_back("<prim:pick>");
     Value index = pop();
-    //index = master_stack.size() - index - 1;
     index = stack_top - stack_bottom - index - 1;
     if (index < 0) {
 	die("pick underflow");
     }
-    //push(master_stack[index]);
     push(stack_bottom[index]);
     callstack.pop_back();
 }
