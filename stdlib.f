@@ -17,11 +17,12 @@
 ( : fib dup 0 = { 0 drop } { dup 1 = { 1 drop } { dup 1 - fib swap 2 - fib + } if } if ; add recursion support )
 
 ( stack operations )
-: wordsize 4 ;
-: s:depth sp sbase - wordsize / ;
-: s:each sbase sp 8 - rot { rot rot over over < } { rot dup 3 pick swap call rot wordsize + rot rot } while drop drop drop ;
+: cell 4 ;
+: cells cell * ; 
+: s:depth sp sbase - cell / ;
+: s:each sbase sp 8 - rot { rot rot over over < } { rot dup 3 pick swap call rot cell + rot rot } while drop drop drop ;
 : s:print { @ print } s:each ;
-: s:pick 2 + wordsize * sp swap - @ ;
+: s:pick 2 + cell * sp swap - @ ;
 : s:drop s:depth { drop } times ;
 
 ( string operations )
