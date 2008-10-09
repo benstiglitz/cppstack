@@ -5,7 +5,8 @@
 : >= ( n m -- n>=m ) < not ;
 : 1+ ( n -- n+1 ) 1 + ;
 : 1- ( n -- n-1 ) 1 - ;
-: upto ( n m {} -- {n..m} -- ) { rot rot over over <= } { rot dup 3 pick swap call rot 1+ rot rot } while drop drop drop ;
+: times ( n {} -- { } -- ) r< r< { r> r@ 0 > swap r< } { r> r> r> rot r< swap r< dup r< call r> r> 1- r> rot r< swap r< r< } while r> r> drop drop ;
+: upto ( n m {} -- {n..m} -- ) r< over - { r> r@ swap r< call } times r> drop ;
 : do dup call while ;
 : . print ;
 : print-stack sbase sp { @ print } upto ;
@@ -13,7 +14,6 @@
 : % divmod swap drop ;
 : = over over < { drop drop 0 } { > { 0 } { 1 } if } if ;
 : <> = not ;
-: times ( n {} -- { } -- ) r< r< { r> r@ 0 > swap r< } { r> r> r> rot r< swap r< dup r< call r> r> 1- r> rot r< swap r< r< } while r> r> drop drop ;
 ( : fib dup 0 = { 0 drop } { dup 1 = { 1 drop } { dup 1 - fib swap 2 - fib + } if } if ; add recursion support )
 
 ( stack operations )
