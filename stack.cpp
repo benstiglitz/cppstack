@@ -239,13 +239,13 @@ void op_print_string() {
 }
 
 void op_rstack_push() {
-    callstack.push_back("r<");
+    callstack.push_back("<prim:r<>");
     *rstack_top++ = pop();
     callstack.pop_back();
 }
 
 void op_rstack_pull() {
-    callstack.push_back("r>");
+    callstack.push_back("<prim:r>>");
     if (rstack_top == rstack_bottom) {
 	die("Return stack underflow");
     }
@@ -254,7 +254,7 @@ void op_rstack_pull() {
 }
 
 void op_rstack_copy() {
-    callstack.push_back("r@");
+    callstack.push_back("<prim:r@>");
     if (rstack_top == rstack_bottom) {
 	die("Return stack underflow");
     }
@@ -263,7 +263,7 @@ void op_rstack_copy() {
 }
 
 void op_emit() {
-    callstack.push_back("emit");
+    callstack.push_back("<prim:emit>");
     std::cout << (char)pop();
     callstack.pop_back();
 }
