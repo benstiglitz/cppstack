@@ -305,7 +305,7 @@ int main(int argc, char **argv) {
 
     // Read from standard input
     std::cout << "> "; std::getline(std::cin, input);
-    while (!input.empty()) {
+    while (input != "exit" && !std::cin.eof()) {
 	try {
             call(compiler.compile(l.lex(input)));
             if (stack_always_print) {
