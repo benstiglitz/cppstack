@@ -262,6 +262,12 @@ void op_rstack_copy() {
     callstack.pop_back();
 }
 
+void op_emit() {
+    callstack.push_back("emit");
+    std::cout << (char)pop();
+    callstack.pop_back();
+}
+
 int main(int argc, char **argv) {
     stack_bottom = stack_top = (Value *)calloc(sizeof(Value), STACK_SIZE);
     rstack_bottom = rstack_top = (Value *)calloc(sizeof(Value), STACK_SIZE);
@@ -276,7 +282,7 @@ int main(int argc, char **argv) {
     PRIM(compiler, op_greater, ">");
     PRIM(compiler, op_store,	"!");
     PRIM(compiler, op_load,	"@");
-    PRIM(compiler, op_load_char, "@c");
+    PRIM(compiler, op_load_char, "c@");
     PRIM(compiler, op_pick,	"pick");
     PRIM(compiler, op_swap,	"swap");
     PRIM(compiler, op_rot,	"rot");
@@ -291,6 +297,7 @@ int main(int argc, char **argv) {
     PRIM(compiler, op_rstack_push, "r<");
     PRIM(compiler, op_rstack_pull, "r>");
     PRIM(compiler, op_rstack_copy, "r@");
+    PRIM(compiler, op_emit,	"emit");
 
     std::string input;
     

@@ -26,5 +26,5 @@
 : s:drop s:depth { drop } times ;
 
 ( string operations )
-: .s print-string ;
-: string-length 0 { over @c 0 <> } { 1+ swap 1+ swap } while swap drop ;
+: .s { dup c@ dup 0 <> } { emit 1+ } while drop ;
+: string-length 0 { over c@ 0 <> } { 1+ swap 1+ swap } while swap drop ;
