@@ -19,7 +19,7 @@ class Compiler
     std::stack<Clause *> clauses;
     std::map<std::string, Value> ops;
     std::string active_def;
-    enum { state_normal, state_def , state_comment, state_variable } state;
+    enum { state_normal, state_comment, state_variable } state;
     Value compile_token(std::string token, SourceLocation location);
 
     public:
@@ -27,4 +27,5 @@ class Compiler
     Value *compile(std::vector < std::pair<std::string, SourceLocation> > tokens);
     void register_primitive(std::string name, Value tag);
     std::string name_for_value(Value *v);
+    std::map<std::string, Value> &dictionary();
 };

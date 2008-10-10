@@ -109,26 +109,6 @@ Value Compiler::compile_token(std::string token, SourceLocation location) {
 	    delete c;
 
 	    return (Value)v | 2;
-	} else if (token == ":") {
-	    if (clauses.size() > 1) {
-		while (!clauses.empty()) {
-		    clauses.pop();
-		}
-                throw NestedDefinitionError(token, location);
-            }
-            clauses.push(new Clause);
-	    state = state_def;
-	    return 0;
-	} else if (token == ";") {
-	    Clause *c = clauses.top();
-	    clauses.pop();
-	    Value *v = (Value *)malloc(sizeof(Value) * (c->size() + 1));
-	    std::copy(c->begin(), c->end(), v);
-	    v[c->size()] = 0;
-	    delete c;
-
-	    ops[active_def] = (Value)v;
-	    return 0;
 	} else if (token == "(") {
 	    state = state_comment;
 	    return 0;
@@ -144,10 +124,6 @@ Value Compiler::compile_token(std::string token, SourceLocation location) {
             throw UnknownTokenError(token, location);
 	    return 0;
 	}
-    case state_def:
-	active_def = token;
-	state = state_normal;
-	return 0;
     case state_comment:
 	if (token == ")") {
 	    state = state_normal;
@@ -172,4 +148,9 @@ std::string Compiler::name_for_value(Value *v) {
 	if (p.second == (Value)v) return p.first;
     }
     return "";
+}
+
+
+std::map<std::string, Value> &Compiler::dictionary() {
+    return ops;
 }

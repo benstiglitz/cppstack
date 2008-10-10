@@ -221,8 +221,8 @@ void op_mul() {
 void op_divmod() {
     callstack.push_back("<prim:divmod>");
     Value b = pop(), a = pop();
-    push(a / b);
     push(a % b);
+    push(a / b);
     callstack.pop_back();
 }
 
@@ -268,6 +268,14 @@ void op_emit() {
     callstack.pop_back();
 }
 
+void op_def() {
+    callstack.push_back("<prim:;>");
+    Value *clause = (Value *)pop();
+    std::string token = (char *)pop();
+    compiler.dictionary()[token] = (Value)clause;
+    callstack.pop_back();
+}
+
 int main(int argc, char **argv) {
     stack_bottom = stack_top = (Value *)calloc(sizeof(Value), STACK_SIZE);
     rstack_bottom = rstack_top = (Value *)calloc(sizeof(Value), STACK_SIZE);
@@ -298,6 +306,7 @@ int main(int argc, char **argv) {
     PRIM(compiler, op_rstack_pull, "r>");
     PRIM(compiler, op_rstack_copy, "r@");
     PRIM(compiler, op_emit,	"emit");
+    PRIM(compiler, op_def,      ";");
 
     std::string input;
     
