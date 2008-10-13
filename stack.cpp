@@ -5,6 +5,9 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+
+#include <readline/readline.h>
+
 #include "types.h"
 #include "Compiler.h"
 
@@ -20,6 +23,7 @@ Compiler compiler;
 
 #define PRIM(c, f, n) { int _prim_tag = prims.size(); prims.push_back(f); c.register_primitive(n, _prim_tag); }
 void HighlightSourceLocation(SourceLocation loc);
+char *CompleteToken(const char *token, int context);
 
 void die(char *msg) {
     std::cout << "--" << std::endl << msg << std::endl;
@@ -232,6 +236,8 @@ void op_def() {
 }
 
 int main(int argc, char **argv) {
+    rl_completion_entry_function = (Function *)&CompleteToken;
+
     stack_bottom = stack_top = (Value *)calloc(sizeof(Value), STACK_SIZE);
     rstack_bottom = rstack_top = (Value *)calloc(sizeof(Value), STACK_SIZE);
     pc = 0;
@@ -275,8 +281,8 @@ int main(int argc, char **argv) {
     }
 
     // Read from standard input
-    std::cout << "> "; std::getline(std::cin, input);
-    while (input != "exit" && !std::cin.eof()) {
+    char *cinput = readline("> ");
+    while (cinput && (input = cinput) != "exit") {
 	try {
             call(compiler.compile(l.lex(input)));
             if (stack_always_print) {
@@ -296,7 +302,10 @@ int main(int argc, char **argv) {
 	    HighlightSourceLocation(e.second);
 	    std::cout << "Unterminated string" << std::endl;
 	}
-	std::cout <<  "> "; std::getline(std::cin, input);
+	if (!input.empty()) {
+	    add_history(cinput);
+	}
+	cinput = readline("> ");
     }
     return 0;
 }
@@ -304,4 +313,22 @@ int main(int argc, char **argv) {
 void HighlightSourceLocation(SourceLocation loc) {
     std::cout << std::string(2 + loc.first, ' ')
               << std::string(loc.second, '^') << std::endl;
+}
+
+char *CompleteToken(const char *prefix, int state) {
+    static std::map<std::string, Value>::iterator i;
+    static int length;
+    if (state == 0) {
+	i = compiler.dictionary().begin();
+	length = strlen(prefix);
+    }
+
+    while (i != compiler.dictionary().end()) {
+	std::string token = (*i++).first;
+	if (token.find(prefix, 0, length) == 0) {
+	    return strdup(token.c_str());
+	}
+    } 
+    
+    return NULL;
 }
