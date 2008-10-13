@@ -73,34 +73,34 @@ Value pop() {
 }
 
 Value call(Value *c) {
-    std::string s;
-    if ((s = compiler.name_for_value(c)).empty()) {
-	std::stringstream ss;
-	ss << "<clause:" << c << ">";
-	s = ss.str();
-    }
-    *rstack_top++ = (Value)pc;
     pc = c;
-    while(*pc != 0) {
+    while(1) {
 	Value v = *pc;
-	if ((v & 3) == 1) {
+	if (v == 0) {
+	    if (rstack_top == rstack_bottom) {
+		break;
+	    } else {
+		pc = (Value *)*--rstack_top;
+	    }
+	} else if ((v & 3) == 1) {
 	    push(v >> 2);
 	} else if ((v & 3) == 2) {
 	    push(v & (~2));
 	} else if ((v & 3) == 3) {
 	    prims[v>>2]();
 	} else {
-	    call((Value *)v);
+	    *rstack_top++ = (Value)pc;
+	    pc = (Value *)v - 1;
 	}
 	pc++;
     }
-    pc = (Value *)*--rstack_top;
 }
 
 void op_call_if_nonzero() {
     Value clause = pop(), predicate = pop();
     if (predicate != 0) {
-	call((Value *)clause);
+	*rstack_top++ = (Value)pc;
+	pc = (Value *)clause - 1;
     }
 }
 
@@ -115,10 +115,6 @@ void op_add() {
 void op_sub() {
     int b = pop(), a = pop();
     push(a - b);
-}
-
-void op_call() {
-    call((Value *)pop());
 }
 
 void op_while() {
@@ -245,7 +241,6 @@ int main(int argc, char **argv) {
     PRIM(compiler, op_print,	"print");
     PRIM(compiler, op_add,	"+");
     PRIM(compiler, op_sub,	"-");
-    PRIM(compiler, op_call,	"call");
     PRIM(compiler, op_while,	"while");
     PRIM(compiler, op_greater, ">");
     PRIM(compiler, op_store,	"!");
