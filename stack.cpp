@@ -97,12 +97,11 @@ Value call(Value *c) {
     pc = (Value *)*--rstack_top;
 }
 
-
-void op_if() {
-    Value false_clause = pop(), true_clause = pop(), v = pop();
-    Value clause = (v != 0) ? true_clause : false_clause;
-    Value *c = (Value *)clause;
-    call(c);
+void op_call_if_nonzero() {
+    Value clause = pop(), predicate = pop();
+    if (predicate != 0) {
+	call((Value *)clause);
+    }
 }
 
 void op_print() {
@@ -242,7 +241,7 @@ int main(int argc, char **argv) {
     rstack_bottom = rstack_top = (Value *)calloc(sizeof(Value), STACK_SIZE);
     pc = 0;
 
-    PRIM(compiler, op_if,	"if");
+    PRIM(compiler, op_call_if_nonzero, "call?");
     PRIM(compiler, op_print,	"print");
     PRIM(compiler, op_add,	"+");
     PRIM(compiler, op_sub,	"-");
