@@ -13,7 +13,6 @@ Value *stack_bottom, *stack_top;
 Value *rstack_bottom, *rstack_top;
 Value stack_always_print = 0;
 std::vector<void (*)(void)> prims;
-std::deque<std::string> callstack;
 Value *pc;
 
 Lexer l;
@@ -31,18 +30,28 @@ void die(char *msg) {
     }
     std::cout << std::endl;
 
-    std::cout << "Return stack:";
+    std::cout << "Return stack:" << std::endl;
+    *rstack_top++ = (Value)pc;
     while (rstack_bottom < rstack_top) {
-	std::cout << " " << (Value *)*rstack_bottom++;
+	Value *v = (Value *)*--rstack_top;
+	if (v == 0) {
+	    std::cout << "  <clause:0>";
+	} else {
+	    std::string name = compiler.name_for_value((Value *)*v);
+	    if (!name.empty()) {
+		if ((*v & 3) == 3) {
+		    std::cout << "  <prim:" << name << ">";
+		} else {
+		    std::cout << "  " << name;
+		}
+	    } else {
+		std::cout << "  <clause:" << v << ">";
+	    }
+	}
+	std::cout << std::endl;
     }
-    std::cout << std::endl;
 
     std::cout << "PC: " << pc << std::endl;
-
-    std::cout << "Call stack: " << std::endl;
-    for(std::deque<std::string>::reverse_iterator i = callstack.rbegin(); i != callstack.rend(); i++) {
-	std::cout << "  " << *i << std::endl;
-    }
 
     exit(1);
 }
@@ -66,7 +75,6 @@ Value call(Value *c) {
 	ss << "<clause:" << c << ">";
 	s = ss.str();
     }
-    callstack.push_back(s);
     *rstack_top++ = (Value)pc;
     pc = c;
     while(*pc != 0) {
@@ -83,197 +91,144 @@ Value call(Value *c) {
 	pc++;
     }
     pc = (Value *)*--rstack_top;
-    callstack.pop_back();
 }
 
 
 void op_if() {
-    callstack.push_back("<prim:if>");
     Value false_clause = pop(), true_clause = pop(), v = pop();
     Value clause = (v != 0) ? true_clause : false_clause;
     Value *c = (Value *)clause;
     call(c);
-    callstack.pop_back();
 }
 
 void op_print() {
-    callstack.push_back("<prim:print>");
     std::cout << " " << pop();
-    callstack.pop_back();
 }
 
 void op_add() {
-    callstack.push_back("<prim:+>");
     push(pop() + pop());
-    callstack.pop_back();
 }
 
 void op_sub() {
-    callstack.push_back("<prim:->");
     int b = pop(), a = pop();
     push(a - b);
-    callstack.pop_back();
 }
 
 void op_call() {
-    callstack.push_back("<prim:call>");
     call((Value *)pop());
-    callstack.pop_back();
 }
 
 void op_while() {
-    callstack.push_back("<prim:while>");
     Value loop = pop(), predicate = pop();
     call((Value *)predicate);
     while (pop()) {
 	call((Value *)loop);
 	call((Value *)predicate);
     }
-    callstack.pop_back();
 }
 
 void op_greater() {
-    callstack.push_back("<prim:>>");
     int b = pop(), a = pop();
     push(a > b ? 1 : 0);
-    callstack.pop_back();
 }
 
 void op_store() {
-    callstack.push_back("<prim:!>");
     Value *addr = (Value *)pop();
     Value v = pop();
     *addr = v;
-    callstack.pop_back();
 }
 
 void op_load() {
-    callstack.push_back("<prim:@>");
     Value *addr = (Value *)pop();
     push(*addr);
-    callstack.pop_back();
 }
 
 void op_load_char() {
-    callstack.push_back("<prim:c@>");
     char *addr = (char *)pop();
     Value offset = (Value)addr % sizeof(Value);
     addr = (char *)((Value)addr & ~0x3);
     push((Value)addr[offset]);
-    callstack.pop_back();
 }
 
 void op_drop() {
-    callstack.push_back("<prim:drop>");
     (void)pop();
-    callstack.pop_back();
 }
 
 void op_pick() {
-    callstack.push_back("<prim:pick>");
     Value index = pop();
     index = stack_top - stack_bottom - index - 1;
     if (index < 0) {
 	die("pick underflow");
     }
     push(stack_bottom[index]);
-    callstack.pop_back();
 }
 
 void op_swap() {
-    callstack.push_back("<prim:swap>");
     Value a = pop(), b = pop();
     push(a); push(b);
-    callstack.pop_back();
 }
 
 void op_rot() {
-    callstack.push_back("<prim:rot>");
     Value c = pop(), b = pop(), a = pop();
     push(b); push(c); push(a);
-    callstack.pop_back();
 }
 
 void op_not() {
-    callstack.push_back("<prim:not>");
     push(!pop());
-    callstack.pop_back();
 }
 
 void op_stack_bottom() {
-    callstack.push_back("<prim:sbase>");
     push((Value)stack_bottom);
-    callstack.pop_back();
 }
 
 void op_stack_top() {
-    callstack.push_back("<prim:sp>");
     push((Value)stack_top);
-    callstack.pop_back();
 }
 
 void op_mul() {
-    callstack.push_back("<prim:*>");
     push(pop() * pop());
-    callstack.pop_back();
 }
 
 void op_divmod() {
-    callstack.push_back("<prim:divmod>");
     Value b = pop(), a = pop();
     push(a % b);
     push(a / b);
-    callstack.pop_back();
 }
 
 void var_print() {
-    callstack.push_back("<prim:s:always-print>");
     push((Value)&stack_always_print);
-    callstack.pop_back();
 }
 
 void op_print_string() {
-    callstack.push_back("<prim:print-string>");
     std::cout << (char *)pop();
-    callstack.pop_back();
 }
 
 void op_rstack_push() {
-    callstack.push_back("<prim:r<>");
     *rstack_top++ = pop();
-    callstack.pop_back();
 }
 
 void op_rstack_pull() {
-    callstack.push_back("<prim:r>>");
     if (rstack_top == rstack_bottom) {
 	die("Return stack underflow");
     }
     push(*--rstack_top);
-    callstack.pop_back();
 }
 
 void op_rstack_copy() {
-    callstack.push_back("<prim:r@>");
     if (rstack_top == rstack_bottom) {
 	die("Return stack underflow");
     }
     push(*(rstack_top-1));
-    callstack.pop_back();
 }
 
 void op_emit() {
-    callstack.push_back("<prim:emit>");
     std::cout << (char)pop();
-    callstack.pop_back();
 }
 
 void op_def() {
-    callstack.push_back("<prim:;>");
     Value *clause = (Value *)pop();
     std::string token = (char *)pop();
     compiler.dictionary()[token] = (Value)clause;
-    callstack.pop_back();
 }
 
 int main(int argc, char **argv) {
