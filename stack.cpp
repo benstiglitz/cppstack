@@ -96,14 +96,6 @@ Value call(Value *c) {
     }
 }
 
-void op_call_if_nonzero() {
-    Value clause = pop(), predicate = pop();
-    if (predicate != 0) {
-	*rstack_top++ = (Value)pc;
-	pc = (Value *)clause - 1;
-    }
-}
-
 void op_print() {
     std::cout << " " << pop();
 }
@@ -202,8 +194,11 @@ void op_print_string() {
     std::cout << (char *)pop();
 }
 
-void op_rstack_push() {
-    *rstack_top++ = pop();
+void op_rstack_push_cond() {
+    Value v = pop(), pred = pop();
+    if (pred) {
+	*rstack_top++ = v;
+    }
 }
 
 void op_rstack_pull() {
@@ -237,7 +232,6 @@ int main(int argc, char **argv) {
     rstack_bottom = rstack_top = (Value *)calloc(sizeof(Value), STACK_SIZE);
     pc = 0;
 
-    PRIM(compiler, op_call_if_nonzero, "call?");
     PRIM(compiler, op_print,	"print");
     PRIM(compiler, op_add,	"+");
     PRIM(compiler, op_sub,	"-");
@@ -257,7 +251,7 @@ int main(int argc, char **argv) {
     PRIM(compiler, op_divmod,	"divmod");
     PRIM(compiler, var_print,  "s:always-print");
     PRIM(compiler, op_print_string, "print-string");
-    PRIM(compiler, op_rstack_push, "r<");
+    PRIM(compiler, op_rstack_push_cond, "r<?");
     PRIM(compiler, op_rstack_pull, "r>");
     PRIM(compiler, op_rstack_copy, "r@");
     PRIM(compiler, op_emit,	"emit");

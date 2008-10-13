@@ -1,4 +1,6 @@
+"r<" { r> swap 1 swap r<? 1 swap r<? } ;
 "call" { 4 - r< } ;
+"call?" { 4 - r<? } ;
 "dup" ( n -- n n ) { 0 pick } ;
 "over" ( n m -- n m n ) { 1 pick } ;
 "if" ( n {} {} -- ) { rot { swap } call? swap drop call } ;
