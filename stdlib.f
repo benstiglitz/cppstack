@@ -16,6 +16,8 @@
 "<>" ( n m -- !eql? ) { = not } ;
 ( : fib dup 0 = { 0 drop } { dup 1 = { 1 drop } { dup 1 - fib swap 2 - fib + } if } if ; add recursion support )
 
+"toggle" { dup @ not swap ! } ;
+
 ( stack operations )
 "cell" ( -- cellsize ) { 4 } ;
 "cells" ( n -- m ) { cell * } ; 
