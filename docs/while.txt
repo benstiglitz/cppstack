@@ -5,7 +5,10 @@ a b while
 1 . 		a b			ø
 r<		a			b
 dup		a a			b
-call		a continue?		b
+r<		a			b a
+call		continue?		b a
+r>		continue? a		b
+swap		a continue?		b
 r>		a continue? b		ø
 rot		continue? b a		ø
 r<		continue? b		a
