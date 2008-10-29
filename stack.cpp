@@ -78,16 +78,11 @@ Value pop() {
 }
 
 Value call(Value *c) {
+    *rstack_top++ = 0;
     pc = c;
     while(1) {
 	Value v = *pc;
-	if (v == 0) {
-	    if (rstack_top == rstack_bottom) {
-		break;
-	    } else {
-		pc = (Value *)*--rstack_top;
-	    }
-	} else if ((v & 3) == 1) {
+	if ((v & 3) == 1) {
 	    push(v >> 2);
 	} else if ((v & 3) == 2) {
 	    push(v & (~2));
@@ -97,6 +92,11 @@ Value call(Value *c) {
 	    *rstack_top++ = (Value)pc;
 	    pc = (Value *)v - 1;
 	}
+
+	if (pc == 0) {
+	    break;
+	}
+
 	pc++;
     }
 }
@@ -173,12 +173,16 @@ void op_not() {
     push(!pop());
 }
 
-void op_stack_bottom() {
-    push((Value)stack_bottom);
+void var_stack_bottom() {
+    push((Value)&stack_bottom);
 }
 
-void op_stack_top() {
-    push((Value)stack_top);
+void var_stack_top() {
+    push((Value)&stack_top);
+}
+
+void var_pc() {
+  push((Value)&pc);
 }
 
 void op_mul() {
@@ -197,6 +201,10 @@ void var_print() {
 
 void op_print_string() {
     std::cout << (char *)pop();
+}
+
+void op_rstack_push() {
+    *rstack_top++ = pop();
 }
 
 void op_rstack_push_cond() {
@@ -254,12 +262,14 @@ int main(int argc, char **argv) {
     PRIM(compiler, op_rot,	"rot");
     PRIM(compiler, op_not,     "not");
     PRIM(compiler, op_drop,	"drop");
-    PRIM(compiler, op_stack_top, "sp");
-    PRIM(compiler, op_stack_bottom, "sbase");
+    PRIM(compiler, var_stack_top, "sp");
+    PRIM(compiler, var_stack_bottom, "sbase");
+    PRIM(compiler, var_pc,	"pc");
     PRIM(compiler, op_mul,	"*");
     PRIM(compiler, op_divmod,	"divmod");
     PRIM(compiler, var_print,  "s:always-print");
     PRIM(compiler, op_print_string, "print-string");
+    PRIM(compiler, op_rstack_push,  "r<");
     PRIM(compiler, op_rstack_push_cond, "r<?");
     PRIM(compiler, op_rstack_pull, "r>");
     PRIM(compiler, op_rstack_copy, "r@");

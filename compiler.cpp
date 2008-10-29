@@ -76,9 +76,11 @@ Value *Compiler::compile(std::vector < std::pair<std::string, SourceLocation> > 
 
     Clause *c = clauses.top();
     clauses.pop();
-    Value *cv = (Value *)malloc(sizeof(Value) * (c->size() + 1));
+    c->push_back(ops["r>"]);
+    c->push_back(ops["pc"]);
+    c->push_back(ops["!"]);
+    Value *cv = (Value *)malloc(sizeof(Value) * c->size());
     std::copy(c->begin(), c->end(), cv);
-    cv[c->size()] = 0;
     delete c;
 
     return cv;
@@ -103,9 +105,11 @@ Value Compiler::compile_token(std::string token, SourceLocation location) {
 	} else if (token == "}") {
 	    Clause *c = clauses.top();
 	    clauses.pop();
-	    Value *v = (Value *)malloc(sizeof(Value) * (c->size() + 1));
+	    c->push_back(ops["r>"]);
+	    c->push_back(ops["pc"]);
+	    c->push_back(ops["!"]);
+	    Value *v = (Value *)malloc(sizeof(Value) * (c->size()));
 	    std::copy(c->begin(), c->end(), v);
-	    v[c->size()] = 0;
 	    delete c;
 
 	    return (Value)v | 2;

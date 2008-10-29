@@ -1,4 +1,4 @@
-"r<" { r> swap 1 swap r<? 1 swap r<? } ;
+( "r<" { r> swap 1 swap r<? 1 swap r<? } ; )
 "call" { 4 - r< } ;
 "call?" { 4 - r<? } ;
 "dup" ( n -- n n ) { 0 pick } ;
@@ -14,7 +14,7 @@
 "upto" ( n m {} -- {n..m} -- ) { r< over - { r> r@ swap r< call } times r> drop } ;
 "do" ( {} {} -- ) { dup call while } ;
 "." ( n -- ) { print } ;
-"print-stack" ( ... -- ) { sbase sp { @ print } upto } ;
+"print-stack" ( ... -- ) { sbase @ sp @ { @ print } upto } ;
 "/" ( n m -- quo ) { divmod swap drop } ;
 "%" ( n m -- rem ) { divmod drop } ;
 "=" ( n m -- eql? ) { over over < { drop drop 0 } { > { 0 } { 1 } if } if } ;
@@ -26,11 +26,11 @@
 ( stack operations )
 "cell" ( -- cellsize ) { 4 } ;
 "cells" ( n -- m ) { cell * } ; 
-"s:depth" ( ... -- ... count ) { sp sbase - cell / } ;
-"s:each" ( ... {} -- ... ) { sbase sp 8 - rot { rot rot over over < } { rot dup 3 pick swap call rot cell + rot rot } while drop drop drop } ;
+"s:depth" ( ... -- ... count ) { sp @ sbase @ - cell / } ;
+"s:each" ( ... {} -- ... ) { sbase @ sp @ 8 - rot { rot rot over over < } { rot dup 3 pick swap call rot cell + rot rot } while drop drop drop } ;
 "s:print" ( ... -- ... ) { { @ print } s:each } ;
-"s:pick" ( ... -- ... ...[-n] ) { 2 + cell * sp swap - @ } ;
-"s:drop" ( ... -- ) { s:depth { drop } times } ;
+"s:pick" ( ... -- ... ...[-n] ) { 2 + cell * sp @ swap - @ } ;
+"s:drop" ( ... -- ) { sbase @ sp ! } ;
 
 ( string operations )
 ".s" ( "" -- ) { { dup c@ dup 0 <> } { emit 1+ } while drop drop } ;
