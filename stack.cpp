@@ -24,6 +24,7 @@ Compiler compiler;
 #define PRIM(c, f, n) { int _prim_tag = prims.size(); prims.push_back(f); c.register_primitive(n, _prim_tag); }
 void HighlightSourceLocation(SourceLocation loc);
 char *CompleteToken(const char *token, int context);
+void PrintReturnStack();
 
 void die(char *msg) {
     std::cout << "--" << std::endl << msg << std::endl;
@@ -35,6 +36,14 @@ void die(char *msg) {
     std::cout << std::endl;
 
     std::cout << "Return stack:" << std::endl;
+    PrintReturnStack();
+
+    std::cout << "PC: " << pc << std::endl;
+
+    exit(1);
+}
+
+void PrintReturnStack() {
     *rstack_top++ = (Value)pc;
     while (rstack_bottom < rstack_top) {
 	Value *v = (Value *)*--rstack_top;
@@ -54,12 +63,7 @@ void die(char *msg) {
 	}
 	std::cout << std::endl;
     }
-
-    std::cout << "PC: " << pc << std::endl;
-
-    exit(1);
 }
-
 void push(Value v) {
     *stack_top++ = v;
 }
