@@ -27,12 +27,13 @@ void HighlightSourceLocation(SourceLocation loc);
 char *CompleteToken(const char *token, int context);
 void PrintReturnStack();
 
-void die(char *msg) {
+void halt(char *msg) {
     std::cout << "--" << std::endl << msg << std::endl;
 
     std::cout << "Stack:";
-    while (stack_bottom < stack_top) {
-	std::cout << " " << *stack_bottom++;
+    Value *stack_cur = stack_bottom;
+    while (stack_cur < stack_top) {
+	std::cout << " " << *stack_cur++;
     }
     std::cout << std::endl;
 
@@ -41,13 +42,20 @@ void die(char *msg) {
 
     std::cout << "PC: " << pc << std::endl;
 
+    *rstack_top++ = (Value)pc - 4;
+    pc = 0;
+}
+
+void die(char *msg) {
+    halt(msg);
     exit(1);
 }
 
 void PrintReturnStack() {
     *rstack_top++ = (Value)pc;
-    while (rstack_bottom < rstack_top) {
-	Value *v = (Value *)*--rstack_top;
+    Value *rstack_cur = rstack_top;
+    while (rstack_bottom < rstack_cur) {
+	Value *v = (Value *)*--rstack_cur;
 	if (v == 0) {
 	    std::cout << "  <clause:0>";
 	} else {
@@ -64,6 +72,7 @@ void PrintReturnStack() {
 	}
 	std::cout << std::endl;
     }
+    rstack_top--;
 }
 void push(Value v) {
     *stack_top++ = v;
@@ -71,11 +80,21 @@ void push(Value v) {
 
 Value pop() {
     if (stack_top == stack_bottom) {
-	die("Stack underflow");
+	die("Fatal stack underflow");
     }
     Value v = *--stack_top;
     return v;
 }
+
+bool can_pop(int cells) {
+    if (stack_top - (cells - 1) == stack_bottom) {
+	halt("Stack underflow");
+	return false;
+    } else {
+	return true;
+    }
+}
+#define will_pop(n) if(!can_pop(n)) { return; }
 
 Value call(Value *c) {
     *rstack_top++ = 0;
@@ -102,44 +121,49 @@ Value call(Value *c) {
 }
 
 void op_print() {
+    will_pop(1);
+
     std::cout << " " << pop();
 }
 
 void op_add() {
+    will_pop(2);
+
     push(pop() + pop());
 }
 
 void op_sub() {
+    will_pop(2);
+
     int b = pop(), a = pop();
     push(a - b);
 }
 
-void op_while() {
-    Value loop = pop(), predicate = pop();
-    call((Value *)predicate);
-    while (pop()) {
-	call((Value *)loop);
-	call((Value *)predicate);
-    }
-}
-
 void op_greater() {
+    will_pop(2);
+
     int b = pop(), a = pop();
     push(a > b ? 1 : 0);
 }
 
 void op_store() {
+    will_pop(2);
+
     Value *addr = (Value *)pop();
     Value v = pop();
     *addr = v;
 }
 
 void op_load() {
+    will_pop(1);
+
     Value *addr = (Value *)pop();
     push(*addr);
 }
 
 void op_load_char() {
+    will_pop(1);
+
     char *addr = (char *)pop();
     Value offset = (Value)addr % sizeof(Value);
     addr = (char *)((Value)addr & ~0x3);
@@ -147,10 +171,14 @@ void op_load_char() {
 }
 
 void op_drop() {
+    will_pop(1);
+
     (void)pop();
 }
 
 void op_pick() {
+    will_pop(1);
+
     Value index = pop();
     index = stack_top - stack_bottom - index - 1;
     if (index < 0) {
@@ -160,16 +188,22 @@ void op_pick() {
 }
 
 void op_swap() {
+    will_pop(2);
+
     Value a = pop(), b = pop();
     push(a); push(b);
 }
 
 void op_rot() {
+    will_pop(3);
+
     Value c = pop(), b = pop(), a = pop();
     push(b); push(c); push(a);
 }
 
 void op_not() {
+    will_pop(1);
+
     push(!pop());
 }
 
@@ -182,14 +216,18 @@ void var_stack_top() {
 }
 
 void var_pc() {
-  push((Value)&pc);
+    push((Value)&pc);
 }
 
 void op_mul() {
+    will_pop(2);
+
     push(pop() * pop());
 }
 
 void op_divmod() {
+    will_pop(2);
+
     Value b = pop(), a = pop();
     push(a % b);
     push(a / b);
@@ -200,14 +238,20 @@ void var_print() {
 }
 
 void op_print_string() {
+    will_pop(2);
+
     std::cout << (char *)pop();
 }
 
 void op_rstack_push() {
+    will_pop(1);
+
     *rstack_top++ = pop();
 }
 
 void op_rstack_push_cond() {
+    will_pop(2);
+
     Value v = pop(), pred = pop();
     if (pred) {
 	*rstack_top++ = v;
@@ -229,10 +273,14 @@ void op_rstack_copy() {
 }
 
 void op_emit() {
+    will_pop(1);
+
     std::cout << (char)pop();
 }
 
 void op_def() {
+    will_pop(2);
+
     Value *clause = (Value *)pop();
     std::string token = (char *)pop();
     compiler.dictionary()[token] = (Value)clause;

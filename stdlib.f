@@ -37,6 +37,10 @@
 "string-length" ( "" -- len ) {  0 { over c@ 0 <> } { 1+ swap 1+ swap } while swap drop } ;
 "cr" ( -- ) { 10 emit } ;
 
+( debugging )
+"d:halt" { 0 r< } ;
+"d:continue" { r> drop r> drop } ;
+
 ( memory )
 "here" { heap @ } ;
 "allot" { here + heap ! } ;
