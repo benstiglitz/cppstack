@@ -15,6 +15,7 @@ const int STACK_SIZE = 1024;
 Value *stack_bottom, *stack_top;
 Value *rstack_bottom, *rstack_top;
 Value stack_always_print = 0;
+Value *heap;
 std::vector<void (*)(void)> prims;
 Value *pc;
 
@@ -229,11 +230,16 @@ void op_def() {
     compiler.dictionary()[token] = (Value)clause;
 }
 
+void var_heap() {
+    push((Value)&heap);
+}
+
 int main(int argc, char **argv) {
     rl_completion_entry_function = (Function *)&CompleteToken;
 
     stack_bottom = stack_top = (Value *)calloc(sizeof(Value), STACK_SIZE);
     rstack_bottom = rstack_top = (Value *)calloc(sizeof(Value), STACK_SIZE);
+    heap = (Value *)calloc(sizeof(Value), 4096);
     pc = 0;
 
     PRIM(compiler, op_print,	"print");
@@ -259,6 +265,7 @@ int main(int argc, char **argv) {
     PRIM(compiler, op_rstack_copy, "r@");
     PRIM(compiler, op_emit,	"emit");
     PRIM(compiler, op_def,      ";");
+    PRIM(compiler, var_heap,    "heap");
 
     std::string input;
     

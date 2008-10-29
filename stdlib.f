@@ -36,3 +36,7 @@
 ".s" ( "" -- ) { { dup c@ dup 0 <> } { emit 1+ } while drop drop } ;
 "string-length" ( "" -- len ) {  0 { over c@ 0 <> } { 1+ swap 1+ swap } while swap drop } ;
 "cr" ( -- ) { 10 emit } ;
+
+( memory )
+"here" { heap @ } ;
+"allot" { here + heap ! } ;
