@@ -239,7 +239,6 @@ int main(int argc, char **argv) {
     PRIM(compiler, op_print,	"print");
     PRIM(compiler, op_add,	"+");
     PRIM(compiler, op_sub,	"-");
-    PRIM(compiler, op_while,	"while");
     PRIM(compiler, op_greater, ">");
     PRIM(compiler, op_store,	"!");
     PRIM(compiler, op_load,	"@");

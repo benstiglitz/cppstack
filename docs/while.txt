@@ -1,0 +1,39 @@
+a b while
+
+		a b			ø
+-----
+1 . 		a b			ø
+r<		a			b
+dup		a a			b
+r<		a			b a
+call		continue?		b a
+r>		continue? a		b
+swap		a continue?		b
+r>		a continue? b		ø
+rot		continue? b a		ø
+r<		continue? b		a
+dup		continue? b b		a
+r<		continue? b		a b
+
+swap		b continue?		a b
+{		b continue? {}		a b
+≈		b			a b pc
+	call	ø			a b pc
+	r>	pc			a b
+	56	pc 56			a b
+	-	offset			a b
+	r>	offset b		a
+	r>	offset b a		ø
+	swap	offset a b		ø
+	rot	a b offset		ø
+	r<	a b			offset
+}
+call?		b continue?		a b
+		[thread above]
+----
+		b			a b
+drop		ø			a b
+r>		b			a
+r>		b a			ø
+drop		a			ø
+drop		ø			ø 

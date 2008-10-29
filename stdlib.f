@@ -4,6 +4,7 @@
 "dup" ( n -- n n ) { 0 pick } ;
 "over" ( n m -- n m n ) { 1 pick } ;
 "if" ( n {} {} -- ) { rot { swap } call? swap drop call } ;
+"while" ( {} {} -- ) { r< dup r< call r> swap r> rot r< dup r< swap { call r> 56 - r> r> swap rot r< } call? drop r> r> drop drop } ;
 "<" ( n m -- n<m ) { swap > } ;
 "<=" ( n m -- n<=m ) { > not } ;
 ">=" ( n m -- n>=m ) { < not } ;
