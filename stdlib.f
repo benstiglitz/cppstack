@@ -38,8 +38,10 @@
 "cr" ( -- ) { 10 emit } ;
 
 ( debugging )
+"d:to-constant" { 4 * 1 + } ;
 "d:halt" { 0 r< } ;
 "d:continue" { r> drop r> drop } ;
+"d:break" ( addr -- ) { { "Hit breakpoint at" .s r@ . d:halt r> drop 0 0 pc ! } swap over over @ swap 7 cells + ! over over d:to-constant swap 8 cells + ! ! } ;
 
 ( memory )
 "here" { heap @ } ;

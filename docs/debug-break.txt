@@ -1,0 +1,22 @@
+----		addr			ø
+{
+0	d:halt	?				? addr
+4	r>	? addr				?
+8	drop	?				?
+12	[op]	? ?				? ?
+16	[addr]	? ? addr			? ?
+20	pc	? ? addr pc			? ?
+24	!	? ?				? ?
+}		addr thunk			ø
+swap		thunk addr			ø
+over over	thunk addr thunk addr		ø
+@		thunk addr thunk op		ø
+swap		thunk addr op thunk		ø
+3 cells +	thunk addr op thunk+12		ø
+!		thunk addr			ø
+over over	thunk addr thunk addr		ø
+d:to-constant	thunk addr thunk addr(c)	ø
+swap		thunk addr addr thunk		ø
+4 cells +	thunk addr addr thunk+16	ø
+!		thunk addr			ø
+!		ø				ø
