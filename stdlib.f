@@ -15,8 +15,8 @@
 "do" ( {} {} -- ) { dup call while } ;
 "." ( n -- ) { print } ;
 "print-stack" ( ... -- ) { sbase @ sp @ { @ print } upto } ;
-"/" ( n m -- quo ) { divmod swap drop } ;
-"%" ( n m -- rem ) { divmod drop } ;
+"/" ( n m -- quo ) { remquo swap drop } ;
+"%" ( n m -- rem ) { remquo drop } ;
 "=" ( n m -- eql? ) { over over < { drop drop 0 } { > { 0 } { 1 } if } if } ;
 "<>" ( n m -- !eql? ) { = not } ;
 ( : fib dup 0 = { 0 drop } { dup 1 = { 1 drop } { dup 1 - fib swap 2 - fib + } if } if ; add recursion support )

@@ -225,7 +225,7 @@ void op_mul() {
     push(pop() * pop());
 }
 
-void op_divmod() {
+void op_remquo() {
     will_pop(2);
 
     Value b = pop(), a = pop();
@@ -314,7 +314,7 @@ int main(int argc, char **argv) {
     PRIM(compiler, var_stack_bottom, "sbase");
     PRIM(compiler, var_pc,	"pc");
     PRIM(compiler, op_mul,	"*");
-    PRIM(compiler, op_divmod,	"divmod");
+    PRIM(compiler, op_remquo,	"remquo");
     PRIM(compiler, var_print,  "s:always-print");
     PRIM(compiler, op_print_string, "print-string");
     PRIM(compiler, op_rstack_push,  "r<");
