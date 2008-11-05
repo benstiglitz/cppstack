@@ -139,7 +139,7 @@ Value call(Value *c) {
 void op_print() {
     will_pop(1);
 
-    std::cout << " " << pop();
+    std::cout << pop();
 }
 
 void op_add() {

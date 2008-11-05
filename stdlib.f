@@ -14,7 +14,7 @@
 "upto" ( n m {} -- {n..m} -- ) { r< over - { r> r@ swap r< call } times r> drop } ;
 "do" ( {} {} -- ) { dup call while } ;
 "." ( n -- ) { print } ;
-"print-stack" ( ... -- ) { sbase @ sp @ { @ print } upto } ;
+"print-stack" ( ... -- ) { sbase @ sp @ { @ print 32 emit } upto } ;
 "/" ( n m -- quo ) { remquo swap drop } ;
 "%" ( n m -- rem ) { remquo drop } ;
 "=" ( n m -- eql? ) { over over < { drop drop 0 } { > { 0 } { 1 } if } if } ;
@@ -28,7 +28,7 @@
 "cells" ( n -- m ) { cell * } ; 
 "s:depth" ( ... -- ... count ) { sp @ sbase @ - cell / } ;
 "s:each" ( ... {} -- ... ) { sbase @ sp @ 8 - rot { rot rot over over < } { rot dup 3 pick swap call rot cell + rot rot } while drop drop drop } ;
-"s:print" ( ... -- ... ) { { @ print } s:each } ;
+"s:print" ( ... -- ... ) { { @ print 32 emit } s:each } ;
 "s:pick" ( ... -- ... ...[-n] ) { 2 + cell * sp @ swap - @ } ;
 "s:drop" ( ... -- ) { sbase @ sp ! } ;
 
@@ -41,7 +41,7 @@
 "d:to-constant" { 4 * 1 + } ;
 "d:halt" { 0 r< } ;
 "d:continue" { r> drop r> drop } ;
-"d:break" ( addr -- ) { { "Hit breakpoint at" .s r@ . d:halt r> drop 0 0 pc ! } swap over over @ swap 7 cells + ! over over d:to-constant swap 8 cells + ! ! } ;
+"d:break" ( addr -- ) { { "Hit breakpoint at " .s r@ . d:halt r> drop 0 0 pc ! } swap over over @ swap 7 cells + ! over over d:to-constant swap 8 cells + ! ! } ;
 
 ( memory )
 "here" { heap @ } ;
@@ -50,4 +50,4 @@
 "read-line" { here { key dup 13 <> } { dup 127 = { 8 32 8 emit emit emit drop dup here <> { -1 allot } { bell } if } { dup emit here ! 1 allot } if } while drop 0 here ! 1 allot } ;
 
 ( initialization )
-{ "signal" .s . 0 r< } interrupt-handler !
+{ "signal " .s . 0 r< } interrupt-handler !
