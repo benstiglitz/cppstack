@@ -292,6 +292,7 @@ void op_emit() {
     will_pop(1);
 
     std::cout << (char)pop();
+    std::flush(std::cout);
 }
 
 void op_def() {

@@ -46,7 +46,8 @@
 ( memory )
 "here" { heap @ } ;
 "allot" { here + heap ! } ;
+"bell" { 7 emit } ;
+"read-line" { here { key dup 13 <> } { dup 127 = { 8 32 8 emit emit emit drop dup here <> { -1 allot } { bell } if } { dup emit here ! 1 allot } if } while drop 0 here ! 1 allot } ;
 
 ( initialization )
-"loop" { { 1 } { } while } ;
 { "signal" .s . 0 r< } interrupt-handler !
