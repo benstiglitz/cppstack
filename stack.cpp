@@ -6,6 +6,8 @@
 #include <fstream>
 #include <sstream>
 #include <signal.h>
+#include <termios.h>
+#include <unistd.h>
 
 #include <readline/readline.h>
 
@@ -304,6 +306,16 @@ void var_heap() {
     push((Value)&heap);
 }
 
+void op_key() {
+    struct termios old_ios, new_ios;
+    tcgetattr(STDIN_FILENO, &old_ios);
+    new_ios = old_ios;
+    cfmakeraw(&new_ios);
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &new_ios);
+    push(getchar());
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &old_ios);
+}
+
 void var_interrupt_handler() {
     push((Value)&interrupt_handler);
 }
@@ -353,6 +365,7 @@ int main(int argc, char **argv) {
     PRIM(compiler, op_emit,	"emit");
     PRIM(compiler, op_def,      ";");
     PRIM(compiler, var_heap,    "heap");
+    PRIM(compiler, op_key,	"key");
     PRIM(compiler, PrintDebugInfo, "d:info");
     PRIM(compiler, var_interrupt_handler, "interrupt-handler");
 
