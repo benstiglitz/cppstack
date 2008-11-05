@@ -325,6 +325,20 @@ void handle_SIGINT(int signal) {
     last_signal = signal;
 }
 
+void IncludeFile(std::string filename) {
+    std::ifstream f;
+    f.open(filename.c_str());
+    std::string input;
+    while(!std::getline(f, input).eof()) {
+	call(compiler.compile(l.lex(input)));
+    }
+}
+
+void op_include() {
+    will_pop(1);
+
+    IncludeFile((char *)pop());
+}
 int main(int argc, char **argv) {
     rl_completion_entry_function = (Function *)&CompleteToken;
 
@@ -369,16 +383,13 @@ int main(int argc, char **argv) {
     PRIM(compiler, op_key,	"key");
     PRIM(compiler, PrintDebugInfo, "d:info");
     PRIM(compiler, var_interrupt_handler, "interrupt-handler");
+    PRIM(compiler, op_include,  "include");
 
     std::string input;
     
     // Read from file
     if (!(argc > 1)) {
-	std::ifstream f;
-	f.open("stdlib.f");
-	while(!std::getline(f, input).eof()) {
-	    call(compiler.compile(l.lex(input)));
-	}
+	IncludeFile("stdlib.f");
     }
 
     // Read from standard input
