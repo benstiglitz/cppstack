@@ -46,3 +46,7 @@
 ( memory )
 "here" { heap @ } ;
 "allot" { here + heap ! } ;
+
+( initialization )
+"loop" { { 1 } { } while } ;
+{ "signal" .s . 0 r< } interrupt-handler !

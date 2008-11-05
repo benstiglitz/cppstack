@@ -5,6 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <signal.h>
 
 #include <readline/readline.h>
 
@@ -18,6 +19,8 @@ Value stack_always_print = 0;
 Value *heap;
 std::vector<void (*)(void)> prims;
 Value *pc;
+Value *interrupt_handler;
+int last_signal = 0;
 
 Lexer l;
 Compiler compiler;
@@ -26,23 +29,12 @@ Compiler compiler;
 void HighlightSourceLocation(SourceLocation loc);
 char *CompleteToken(const char *token, int context);
 void PrintReturnStack();
+void PrintDebugInfo();
 
 void halt(char *msg) {
     std::cout << "--" << std::endl << msg << std::endl;
-
-    std::cout << "Stack:";
-    Value *stack_cur = stack_bottom;
-    while (stack_cur < stack_top) {
-	std::cout << " " << *stack_cur++;
-    }
-    std::cout << std::endl;
-
-    std::cout << "Return stack:" << std::endl;
-    PrintReturnStack();
-
-    std::cout << "PC: " << pc << std::endl;
-
-    *rstack_top++ = (Value)pc - 4;
+    PrintDebugInfo();
+    *rstack_top++ = (Value)pc - sizeof(Value);
     pc = 0;
 }
 
@@ -57,7 +49,7 @@ void PrintReturnStack() {
     while (rstack_bottom < rstack_cur) {
 	Value *v = (Value *)*--rstack_cur;
 	if (v == 0) {
-	    std::cout << "  <clause:0>";
+	    std::cout << "  <repl>";
 	} else {
 	    std::string name = compiler.name_for_value((Value *)*v);
 	    if (!name.empty()) {
@@ -70,10 +62,25 @@ void PrintReturnStack() {
 		std::cout << "  <clause:" << v << ">";
 	    }
 	}
-	std::cout << std::endl;
+	std::cout << " (" << v << ")" << std::endl;
     }
     rstack_top--;
 }
+
+void PrintDebugInfo() {
+    std::cout << "Stack:";
+    Value *stack_cur = stack_bottom;
+    while (stack_cur < stack_top) {
+	std::cout << " " << *stack_cur++;
+    }
+    std::cout << std::endl;
+
+    std::cout << "Return stack:" << std::endl;
+    PrintReturnStack();
+
+    std::cout << "PC: " << pc << std::endl;
+}
+
 void push(Value v) {
     *stack_top++ = v;
 }
@@ -110,6 +117,13 @@ Value call(Value *c) {
 	} else {
 	    *rstack_top++ = (Value)pc;
 	    pc = (Value *)v - 1;
+	}
+
+	if (last_signal) {
+	    *rstack_top++ = (Value)pc;
+	    pc = interrupt_handler - 1;
+	    push(last_signal);
+	    last_signal = 0;
 	}
 
 	if (pc == 0) {
@@ -290,6 +304,14 @@ void var_heap() {
     push((Value)&heap);
 }
 
+void var_interrupt_handler() {
+    push((Value)&interrupt_handler);
+}
+
+void handle_SIGINT(int signal) {
+    last_signal = signal;
+}
+
 int main(int argc, char **argv) {
     rl_completion_entry_function = (Function *)&CompleteToken;
 
@@ -297,6 +319,13 @@ int main(int argc, char **argv) {
     rstack_bottom = rstack_top = (Value *)calloc(sizeof(Value), STACK_SIZE);
     heap = (Value *)calloc(sizeof(Value), 4096);
     pc = 0;
+
+    sigset_t SIGINT_set; sigemptyset(&SIGINT_set);
+    sigaddset(&SIGINT_set, SIGINT);
+    if (sigprocmask(SIG_BLOCK, &SIGINT_set, NULL) != 0) {
+	halt("Could not block signals");
+    }
+    signal(SIGINT, handle_SIGINT);
 
     PRIM(compiler, op_print,	"print");
     PRIM(compiler, op_add,	"+");
@@ -324,6 +353,8 @@ int main(int argc, char **argv) {
     PRIM(compiler, op_emit,	"emit");
     PRIM(compiler, op_def,      ";");
     PRIM(compiler, var_heap,    "heap");
+    PRIM(compiler, PrintDebugInfo, "d:info");
+    PRIM(compiler, var_interrupt_handler, "interrupt-handler");
 
     std::string input;
     
@@ -339,6 +370,7 @@ int main(int argc, char **argv) {
     // Read from standard input
     char *cinput = readline("> ");
     while (cinput && (input = cinput) != "exit") {
+	sigprocmask(SIG_UNBLOCK, &SIGINT_set, NULL);
 	try {
             call(compiler.compile(l.lex(input)));
             if (stack_always_print) {
@@ -361,6 +393,7 @@ int main(int argc, char **argv) {
 	if (!input.empty()) {
 	    add_history(cinput);
 	}
+	sigprocmask(SIG_BLOCK, &SIGINT_set, NULL);
 	cinput = readline("> ");
     }
     return 0;
