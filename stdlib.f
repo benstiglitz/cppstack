@@ -1,3 +1,6 @@
+( bootstrapping )
+";" ( word def -- ) { dp @ rot 1 pick ! 4 + 0 pick rot swap ! 4 + dp ! } dp @ rot 1 pick ! 4 + 0 pick rot swap ! 4 + dp !
+
 ( "r<" { r> swap 1 swap r<? 1 swap r<? } ; )
 "call" { 4 - r< } ;
 "call?" { 4 - r<? } ;

@@ -296,14 +296,6 @@ void op_emit() {
     std::flush(std::cout);
 }
 
-void op_def() {
-    will_pop(2);
-
-    Value *clause = (Value *)pop();
-    std::string token = (char *)pop();
-    dictionary_push(strdup(token.c_str()), (Value)clause);
-}
-
 void var_heap() {
     push((Value)&heap);
 }
@@ -390,7 +382,6 @@ int main(int argc, char **argv) {
     PRIM(compiler, op_rstack_pull, "r>");
     PRIM(compiler, op_rstack_copy, "r@");
     PRIM(compiler, op_emit,	"emit");
-    PRIM(compiler, op_def,      ";");
     PRIM(compiler, var_heap,    "heap");
     PRIM(compiler, op_key,	"key");
     PRIM(compiler, PrintDebugInfo, "d:info");
