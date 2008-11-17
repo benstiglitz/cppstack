@@ -49,5 +49,10 @@
 "bell" { 7 emit } ;
 "read-line" { here { key dup 13 <> } { dup 127 = { 8 32 8 emit emit emit drop dup here <> { -1 allot } { bell } if } { dup emit here ! 1 allot } if } while drop 0 here ! 1 allot } ;
 
+( dictionary )
+"entry" ( -- entrysize ) { 8 } ;
+"entries" ( -- entrysize ) { entry * } ;
+"d:dict" { dbase @ dp @ { over over < } { entry - dup @ .s cr } while drop drop } ;
+
 ( initialization )
 { "signal " .s . 0 r< } interrupt-handler !

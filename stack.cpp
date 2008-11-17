@@ -340,6 +340,15 @@ void op_include() {
 
     IncludeFile((char *)pop());
 }
+
+void var_dict_top() {
+    push((Value)&dictionary_top);
+}
+
+void var_dict_bottom() {
+    push((Value)&dictionary_bottom);
+}
+
 int main(int argc, char **argv) {
     rl_completion_entry_function = (Function *)&CompleteToken;
 
@@ -387,6 +396,8 @@ int main(int argc, char **argv) {
     PRIM(compiler, PrintDebugInfo, "d:info");
     PRIM(compiler, var_interrupt_handler, "interrupt-handler");
     PRIM(compiler, op_include,  "include");
+    PRIM(compiler, var_dict_top, "dp");
+    PRIM(compiler, var_dict_bottom, "dbase");
 
     std::string input;
     
