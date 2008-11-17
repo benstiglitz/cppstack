@@ -13,6 +13,7 @@
 
 #include "types.h"
 #include "Compiler.h"
+#include "dictionary.h"
 
 const int STACK_SIZE = 1024;
 Value *stack_bottom, *stack_top;
@@ -300,7 +301,7 @@ void op_def() {
 
     Value *clause = (Value *)pop();
     std::string token = (char *)pop();
-    compiler.dictionary()[token] = (Value)clause;
+    dictionary_push(strdup(token.c_str()), (Value)clause);
 }
 
 void var_heap() {
@@ -346,6 +347,8 @@ int main(int argc, char **argv) {
     rstack_bottom = rstack_top = (Value *)calloc(sizeof(Value), STACK_SIZE);
     heap = (Value *)calloc(sizeof(Value), 4096);
     pc = 0;
+
+    dictionary_init();
 
     sigset_t SIGINT_set; sigemptyset(&SIGINT_set);
     sigaddset(&SIGINT_set, SIGINT);
@@ -430,15 +433,15 @@ void HighlightSourceLocation(SourceLocation loc) {
 }
 
 char *CompleteToken(const char *prefix, int state) {
-    static std::map<std::string, Value>::iterator i;
+    static Entry *it;
     static int length;
     if (state == 0) {
-	i = compiler.dictionary().begin();
+	it = dictionary_top;
 	length = strlen(prefix);
     }
 
-    while (i != compiler.dictionary().end()) {
-	std::string token = (*i++).first;
+    while (it-- != dictionary_bottom) {
+	std::string token = it->key;
 	if (token.find(prefix, 0, length) == 0) {
 	    return strdup(token.c_str());
 	}

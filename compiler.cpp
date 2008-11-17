@@ -1,4 +1,5 @@
 #include "compiler.h"
+#include "dictionary.h"
 #include <iostream>
 #include <stdlib.h>
 
@@ -60,7 +61,7 @@ Compiler::Compiler() : state(state_normal)
 
 void Compiler::register_primitive(std::string name, Value tag)
 {
-    ops[name] = (tag << 2) | 3;
+    dictionary_push(strdup(name.c_str()), (tag << 2) | 3);
 }
 
 Value *Compiler::compile(std::vector < std::pair<std::string, SourceLocation> > tokens) {
@@ -76,9 +77,9 @@ Value *Compiler::compile(std::vector < std::pair<std::string, SourceLocation> > 
 
     Clause *c = clauses.top();
     clauses.pop();
-    c->push_back(ops["r>"]);
-    c->push_back(ops["pc"]);
-    c->push_back(ops["!"]);
+    c->push_back(dictionary_value_for_key("r>"));
+    c->push_back(dictionary_value_for_key("pc"));
+    c->push_back(dictionary_value_for_key("!"));
     Value *cv = (Value *)malloc(sizeof(Value) * c->size());
     std::copy(c->begin(), c->end(), cv);
     delete c;
@@ -105,9 +106,9 @@ Value Compiler::compile_token(std::string token, SourceLocation location) {
 	} else if (token == "}") {
 	    Clause *c = clauses.top();
 	    clauses.pop();
-	    c->push_back(ops["r>"]);
-	    c->push_back(ops["pc"]);
-	    c->push_back(ops["!"]);
+	    c->push_back(dictionary_value_for_key("r>"));
+	    c->push_back(dictionary_value_for_key("pc"));
+	    c->push_back(dictionary_value_for_key("!"));
 	    Value *v = (Value *)malloc(sizeof(Value) * (c->size()));
 	    std::copy(c->begin(), c->end(), v);
 	    delete c;
@@ -119,8 +120,8 @@ Value Compiler::compile_token(std::string token, SourceLocation location) {
 	} else if (token == "variable") {
 	    state = state_variable;
 	    return 0;
-	} else if (ops.find(token) != ops.end()) {
-	    return ops[token];
+	} else if (dictionary_value_for_key(token.c_str()) != SENTINEL) {
+	    return dictionary_value_for_key(token.c_str());
 	} else {
 	    while (!clauses.empty()) {
 		clauses.pop();
@@ -137,7 +138,7 @@ Value Compiler::compile_token(std::string token, SourceLocation location) {
 	Value *c = (Value *)malloc(sizeof(Value) * 2);
 	*c++ = (Value)malloc(sizeof(Value)) | 2;
 	*c++ - 0;
-	ops[token] = (Value)c | 2;
+	dictionary_push(token.c_str(), (Value)c | 2);
 	state = state_normal;
 	return 0;
     }
@@ -145,16 +146,10 @@ Value Compiler::compile_token(std::string token, SourceLocation location) {
 
 
 std::string Compiler::name_for_value(Value *v) {
-    std::pair<std::string, Value> p;
-    std::map<std::string, Value>::iterator i = ops.begin();
-    while (i != ops.end()) {
-	p = *i++;
-	if (p.second == (Value)v) return p.first;
+    const char *key = dictionary_key_for_value((Value)v);
+    if (key) {
+	return std::string(key);
+    } else {
+	return "";
     }
-    return "";
-}
-
-
-std::map<std::string, Value> &Compiler::dictionary() {
-    return ops;
 }

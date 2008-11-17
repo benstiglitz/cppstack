@@ -2,8 +2,10 @@
 #define __TYPES_H__
 #include <vector>
 #include <memory>
+#include <string>
 
 typedef int Value;
+#define SENTINEL INT_MAX
 typedef std::vector<Value> Clause;
 typedef std::pair<Clause*, unsigned> Frame;
 typedef std::pair<int, int> SourceLocation;
