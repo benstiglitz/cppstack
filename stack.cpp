@@ -341,6 +341,18 @@ void var_dict_bottom() {
     push((Value)&dictionary_bottom);
 }
 
+void op_and() {
+    will_pop(2);
+
+    push(pop() & pop());
+}
+
+void op_or() {
+    will_pop(2);
+
+    push(pop() | pop());
+}
+
 int main(int argc, char **argv) {
     rl_completion_entry_function = (Function *)&CompleteToken;
 
@@ -389,6 +401,8 @@ int main(int argc, char **argv) {
     PRIM(compiler, op_include,  "include");
     PRIM(compiler, var_dict_top, "dp");
     PRIM(compiler, var_dict_bottom, "dbase");
+    PRIM(compiler, op_and, "&");
+    PRIM(compiler, op_or,  "|");
 
     std::string input;
     

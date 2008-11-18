@@ -22,6 +22,8 @@
 "%" ( n m -- rem ) { remquo drop } ;
 "=" ( n m -- eql? ) { over over < { drop drop 0 } { > { 0 } { 1 } if } if } ;
 "<>" ( n m -- !eql? ) { = not } ;
+"and" ( n m -- n && m ) { 0 <> swap 0 <> & } ;
+"or" ( n m -- n || m ) { 0 <> swap 0 <> | } ;
 ( : fib dup 0 = { 0 drop } { dup 1 = { 1 drop } { dup 1 - fib swap 2 - fib + } if } if ; add recursion support )
 
 "toggle" { dup @ not swap ! } ;
