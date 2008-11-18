@@ -40,6 +40,7 @@
 ( string operations )
 ".s" ( "" -- ) { { dup c@ dup 0 <> } { emit 1+ } while drop drop } ;
 "string-length" ( "" -- len ) {  0 { over c@ 0 <> } { 1+ swap 1+ swap } while swap drop } ;
+"s="  { { over over c@ 0 <> swap c@ 0 <> and { over over c@ swap c@ = { 1 } { 0 0 } if } { over over c@ 0 = swap c@ 0 = and 0 } if } { 1+ swap 1+ swap } while rot rot drop drop } ;
 "cr" ( -- ) { 10 emit } ;
 
 ( debugging )
